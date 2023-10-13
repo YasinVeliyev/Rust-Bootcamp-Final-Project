@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 trait Account {
     fn deposit(&mut self, amount: f64) -> Result<(), String>;
     fn withdraw(&mut self, amount: f64) -> Result<(), String>;
