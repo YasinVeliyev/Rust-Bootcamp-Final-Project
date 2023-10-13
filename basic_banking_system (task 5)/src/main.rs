@@ -20,8 +20,10 @@ impl Account for BankAccount {
     }
 
     fn withdraw(&mut self, amount: f64) -> Result<(), String> {
-        if amount > self.balance && amount > 0. {
+        if amount > self.balance {
             return Err("Insufficient balance".to_owned());
+        } else if amount < 0. {
+            return Err("Amount must be greater than 0".to_string());
         }
         self.balance -= amount;
         Ok(())
