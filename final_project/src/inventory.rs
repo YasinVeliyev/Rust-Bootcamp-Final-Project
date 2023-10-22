@@ -1,5 +1,5 @@
 use crate::product::{self, *};
-use std::io;
+use std::{cmp::Ordering, io};
 pub struct Inventory {
     pub store: Vec<Product>,
 }
@@ -15,20 +15,13 @@ impl Inventory {
         }
     }
 
-    pub fn delete(&mut self, name: String, quantity: f32) -> Result<(), String> {
-        if quantity <= 0. {
-            return Err("Out-of-Range Quantity:You insert zero or negative value".to_owned());
-        }
-        if let Ok(index) = self.store.binary_search_by(|p: &Product| p.name.cmp(&name)) {
-            let ref mut pr = self.store[index];
-            if pr.quantity >= quantity {
-                pr.quantity -= quantity;
-                return Ok(());
-            } else {
-                return Err("Insufficient Stock".to_string());
-            }
-        } else {
+    pub fn delete(&mut self, name: String) -> Result<(), String> {
+        let length = self.store.len();
+        self.store.retain(|p: &Product| !p.name.cmp(&name).is_eq());
+        if length == self.store.len() {
             return Err("Item Not Found".to_owned());
+        } else {
+            Ok(())
         }
     }
 
@@ -43,7 +36,7 @@ impl Inventory {
             Ok(i) => index = i,
             Err(_) => return Err("Item Not Found".to_owned()),
         }
-        
+
         loop {
             println!(
                 "Current name is {} For change name enter new name",
