@@ -11,8 +11,8 @@ pub struct Product {
 impl Product {
     pub fn new(name: String, description: String, quantity: f32, price: f32) -> Self {
         Self {
-            name: name.to_string(),
-            description: description.to_owned(),
+            name,
+            description,
             price,
             quantity,
         }
