@@ -1,3 +1,11 @@
+use chrono::prelude::*;
+
 fn main() {
-    println!("Hello, world!");
+    let mut name = String::new();
+    println!("Enter product name");
+
+    if name == "" {
+        std::io::stdin().read_line(&mut name).unwrap();
+    }
+    println!("{name}");
 }

@@ -1,11 +1,22 @@
 use std::cmp::Ordering;
 
-#[derive(Debug, PartialOrd)]
+#[derive(Debug, PartialOrd, Clone)]
 pub struct Product {
     pub name: String,
     pub description: String,
     pub price: f32,
     pub quantity: f32,
+}
+
+impl Product {
+    pub fn new(name: String, description: String, quantity: f32, price: f32) -> Self {
+        Self {
+            name: name.to_string(),
+            description: description.to_owned(),
+            price,
+            quantity,
+        }
+    }
 }
 
 impl PartialEq for Product {
