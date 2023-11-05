@@ -1,11 +1,8 @@
-use chrono::prelude::*;
+use final_project::product::{self, Product};
+
+use final_project::*;
 
 fn main() {
-    let mut name = String::new();
-    println!("Enter product name");
-
-    if name == "" {
-        std::io::stdin().read_line(&mut name).unwrap();
-    }
-    println!("{name}");
+    let mut product = Product::new("Alma".to_owned(), "red".to_owned(), 5., 1.);
+    println!("{}", product);
 }

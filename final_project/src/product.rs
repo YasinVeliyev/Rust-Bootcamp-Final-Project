@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-
+use std::fmt::{Display, Formatter};
 #[derive(Debug, PartialOrd, Clone)]
 pub struct Product {
     pub name: String,
@@ -32,6 +32,20 @@ impl Ord for Product {
         } else {
             Ordering::Less
         }
+    }
+}
+
+impl Display for Product {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{:^24}|{:^24}|{:^24}|{:^24}|{:^24}",
+            self.name,
+            self.quantity,
+            self.price,
+            self.description,
+            self.price * self.quantity
+        )
     }
 }
 

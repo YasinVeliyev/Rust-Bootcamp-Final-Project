@@ -1,115 +1,104 @@
-use crate::product::{self, *};
-use crate::transaction::{self, *};
+use crate::product::*;
+use crate::transaction::*;
 
-use std::{cmp::Ordering, io};
+use std::collections::HashMap;
+use std::fmt::Display;
+use std::io;
 pub struct Inventory {
-    pub store: Vec<Product>,
+    pub store: HashMap<String, Product>,
     pub transactions: Vec<Transaction>,
 }
 
 impl Inventory {
     pub fn add(&mut self, product: Product) {
-        if let Ok(index) = self.store.binary_search(&product) {
-            let ref mut pr = self.store[index];
-            pr.quantity += product.quantity;
-            pr.price = product.price;
-        } else {
-            self.store.push(product)
-        }
+        self.store
+            .entry(product.name.clone())
+            .and_modify(|prod| {
+                prod.quantity += product.quantity;
+                prod.price = (prod.price * prod.quantity + product.price * product.quantity)
+                    / (prod.quantity + product.quantity);
+            })
+            .or_insert(product);
     }
 
     pub fn delete(&mut self, name: String) -> Result<(), String> {
-        let length = self.store.len();
-        self.store.retain(|p: &Product| !p.name.cmp(&name).is_eq());
-        if length == self.store.len() {
-            return Err("Item Not Found".to_owned());
-        } else {
-            Ok(())
+        match self.store.remove(&name) {
+            Some(_) => Ok(()),
+            None => return Err("Item Not Found".to_owned()),
         }
     }
 
-    pub fn edit(&mut self, name: &str) -> Result<(), String> {
-        let mut new_name = String::new();
+    fn ask() -> Product {
+        let mut name = String::new();
         let mut description = String::new();
-        let mut price = String::new();
-        let mut quantity = String::new();
-        let index;
-
-        match self.find(name) {
-            Ok(i) => index = i,
-            Err(_) => return Err("Product Not Found".to_owned()),
-        }
-
-        loop {
-            println!(
-                "Current name is {} For change name enter new name",
-                self.store[index].name
-            );
-            io::stdin().read_line(&mut new_name).unwrap();
-            if new_name.trim() != "" {
-                self.store[index].name = new_name.trim().to_owned();
+        let mut price = 0.;
+        let mut quantity = 0.;
+        let mut product = loop {
+            if name.is_empty() {
+                println!("Enter product name");
+                io::stdin().read_line(&mut name).unwrap();
+                name = name.trim().to_owned();
             }
 
-            println!(
-                "Current price is {} for change price enter a float",
-                self.store[index].price
-            );
-
-            io::stdin().read_line(&mut price).unwrap();
-            if price.trim() != "" {
-                match price.trim().parse::<f32>() {
-                    Ok(price) => self.store[index].price = price,
+            if price == 0. {
+                println!("Enter product price");
+                let mut pirce_str = String::new();
+                io::stdin().read_line(&mut pirce_str).unwrap();
+                match pirce_str.trim().parse::<f32>() {
+                    Ok(pr) => {
+                        if pr <= 0. {
+                            println!("Enter a positive float number");
+                            continue;
+                        }
+                        price = pr
+                    }
                     Err(_) => {
                         println!("Enter a float number");
                         continue;
                     }
                 }
             }
-
-            println!(
-                "Current description is {} For change description enter text",
-                self.store[index].description
-            );
-            io::stdin().read_line(&mut description).unwrap();
-            if description.trim() != "" {
-                self.store[index].description = description.trim().to_owned();
+            if description.is_empty() {
+                println!("Enter product description");
+                io::stdin().read_line(&mut description).unwrap();
+                description = description.trim().to_owned();
             }
 
-            println!(
-                "Current quantity is {} For change quantity enter a float",
-                self.store[index].quantity
-            );
-            io::stdin().read_line(&mut quantity).unwrap();
-
-            if quantity.trim() != "" {
-                match quantity.trim().parse::<f32>() {
-                    Ok(quantity) => self.store[index].quantity = quantity,
+            if quantity == 0. {
+                println!("Enter product quantity");
+                let mut quantity_str = String::new();
+                io::stdin().read_line(&mut quantity_str).unwrap();
+                match quantity_str.trim().parse::<f32>() {
+                    Ok(qt) => {
+                        if qt <= 0. {
+                            println!("Enter a positive float number");
+                            continue;
+                        }
+                        quantity = qt
+                    }
                     Err(_) => {
                         println!("Enter a float number");
                         continue;
                     }
                 }
             }
-            break;
-        }
-
-        Ok(())
+            break Product::new(name.to_owned(), description.to_owned(), quantity, price);
+        };
+        product
     }
-
-    fn find(&mut self, name: &str) -> Result<usize, ()> {
-        if let Ok(index) = self
-            .store
-            .binary_search_by(|p: &Product| p.name.cmp(&name.to_owned()))
-        {
-            return Ok(index);
-        } else {
-            Err(())
+    pub fn edit(&mut self, name: &str) -> Result<(), String> {
+        match self.store.get_mut(name) {
+            Some(prod) => {
+                *prod = Self::ask();
+                return Ok(());
+            }
+            None => return Err("Product not found".to_owned()),
         }
     }
 
     pub fn sell(&mut self, name: &str, quantity: f32, price: f32) -> Result<(), String> {
-        for product in &mut self.store {
-            if product.name == name {
+        match self.store.get_mut(name) {
+            Some(product) => {
                 if product.quantity < quantity {
                     return Err("Insufficient Stock".to_owned());
                 } else {
@@ -122,58 +111,25 @@ impl Inventory {
                     return Ok(());
                 }
             }
+            None => Err("Product not found".to_owned()),
         }
-
-        Err("Product not found".to_owned())
     }
 
     pub fn buy(&mut self) -> Result<(), String> {
-        let mut name = String::new();
-        let mut description = String::new();
-        let mut price = 0.;
-        let mut quantity = 0.;
-
-        loop {
-            println!("Enter product name");
-
-            if name.is_empty() {
-                io::stdin().read_line(&mut name).unwrap();
-                name = name.trim().to_owned();
-            }
-            if description.is_empty() {
-                io::stdin().read_line(&mut description).unwrap();
-                description = description.trim().to_owned();
-            }
-            if price == 0. {
-                let mut price_str = String::new();
-                io::stdin().read_line(&mut price_str).unwrap();
-                match price_str.trim().parse::<f32>() {
-                    Ok(p) => price = p,
-
-                    Err(_) => {
-                        println!("Enter a float number");
-                        continue;
-                    }
-                }
-            }
-            if quantity == 0. {
-                let mut quantity_str = String::new();
-                io::stdin().read_line(&mut quantity_str).unwrap();
-                match quantity_str.trim().parse::<f32>() {
-                    Ok(q) => quantity = q,
-
-                    Err(_) => {
-                        println!("Enter a float number");
-                        continue;
-                    }
-                }
-            }
-
-            break;
-        }
-
-        let product = Product::new(name, description, quantity, price);
-        self.add(product);
+        let product = Self::ask();
+        self.add(product.clone());
+        self.transactions
+            .push(Transaction::new(product, Action::Buy));
         Ok(())
+    }
+}
+
+impl Display for Inventory {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(
+            f,
+            "{:^24}|{:^24}|{:^24}|{:^24}|{:^24}",
+            "Name", "Quantity", "Price", "Description", "Total"
+        )
     }
 }
