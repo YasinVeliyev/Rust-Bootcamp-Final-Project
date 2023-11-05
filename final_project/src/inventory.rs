@@ -1,6 +1,7 @@
+use crate::product;
 use crate::product::*;
+use crate::report::*;
 use crate::transaction::*;
-
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::io;
@@ -124,12 +125,18 @@ impl Inventory {
     }
 }
 
-impl Display for Inventory {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(
-            f,
+impl Report for Inventory {
+    fn report(&self) {
+        // let mut total = 0.;
+        println!("{}", "-".repeat(120));
+        println!(
             "{:^24}|{:^24}|{:^24}|{:^24}|{:^24}",
-            "Name", "Quantity", "Price", "Description", "Total"
-        )
+            "Name", "Quantity", "Price", "Total", "Description",
+        );
+        println!("{}", "-".repeat(120));
+        self.store.iter().for_each(|(name, product)| {
+            println!("{}", product);
+            println!("{}", "-".repeat(120));
+        })
     }
 }
