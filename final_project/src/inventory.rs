@@ -10,7 +10,30 @@ pub struct Inventory {
     pub transactions: Vec<Transaction>,
 }
 
+impl Report for Inventory {
+    fn report(&self) {
+        // let mut total = 0.;
+        println!("{}", "-".repeat(120));
+        println!(
+            "|{:^24}|{:^24}|{:^24}|{:^24}|{:^24}|",
+            "Name", "Quantity", "Price", "Total", "Description",
+        );
+        println!("{}", "-".repeat(126));
+        self.store.iter().for_each(|(name, product)| {
+            println!("{}", product);
+            println!("{}", "-".repeat(126));
+        })
+    }
+}
+
 impl Inventory {
+    pub fn new(products: HashMap<String, Product>) -> Self {
+        Self {
+            store: products,
+            transactions: Vec::new(),
+        }
+    }
+
     pub fn add(&mut self, product: Product) {
         self.store
             .entry(product.name.clone())
@@ -122,21 +145,5 @@ impl Inventory {
         self.transactions
             .push(Transaction::new(product, Action::Buy));
         Ok(())
-    }
-}
-
-impl Report for Inventory {
-    fn report(&self) {
-        // let mut total = 0.;
-        println!("{}", "-".repeat(120));
-        println!(
-            "{:^24}|{:^24}|{:^24}|{:^24}|{:^24}",
-            "Name", "Quantity", "Price", "Total", "Description",
-        );
-        println!("{}", "-".repeat(120));
-        self.store.iter().for_each(|(name, product)| {
-            println!("{}", product);
-            println!("{}", "-".repeat(120));
-        })
     }
 }

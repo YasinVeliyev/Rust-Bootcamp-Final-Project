@@ -1,6 +1,10 @@
+use serde::{Deserialize, Serialize};
+use serde_json::Result;
 use std::cmp::Ordering;
+
 use std::fmt::{Display, Formatter};
-#[derive(Debug, PartialOrd, Clone)]
+#[derive(Debug, PartialOrd, Clone, Serialize, Deserialize)]
+
 pub struct Product {
     pub name: String,
     pub description: String,
@@ -39,12 +43,12 @@ impl Display for Product {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{:^24}|{:^24}|{:^24}|{:^24}|{:^24}",
+            "|{:^24}|{:^24}|{:^24}|{:^24}|{:^24}|",
             self.name,
             self.quantity,
             self.price,
+            self.price * self.quantity,
             self.description,
-            self.price * self.quantity
         )
     }
 }
