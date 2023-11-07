@@ -1,10 +1,10 @@
-use crate::product::*;
+use crate::{product::*, report::Report};
 use chrono::prelude::*;
 
 pub struct Transaction {
     pub date: String,
-    action: Action,
-    product: Product,
+    pub action: Action,
+    pub product: Product,
 }
 
 pub enum Action {

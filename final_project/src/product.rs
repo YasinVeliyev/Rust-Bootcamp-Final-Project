@@ -43,7 +43,7 @@ impl Display for Product {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "|{:^24}|{:^24}|{:^24}|{:^24}|{:^24}|",
+            "|{:^20}|{:^8}|{:^8}|{:^8}|{:^24}|",
             self.name,
             self.quantity,
             self.price,
